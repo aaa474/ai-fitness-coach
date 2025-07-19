@@ -1,0 +1,9 @@
+# Handle line endings consistently
+* text=auto
+
+# Explicit settings for common types
+*.js  text eol=lf
+*.py  text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
