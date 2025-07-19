@@ -40,7 +40,7 @@ const DailyPlan = () => {
   }, []);
 
   const extractLinks = (text) => {
-    const regex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+    const regex = /\[([^\]]+)]\((https?:\/\/[^)]+)\)/g;
     const links = [];
     let match;
     while ((match = regex.exec(text))) {

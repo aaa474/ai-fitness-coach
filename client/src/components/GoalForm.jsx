@@ -83,7 +83,7 @@ const GoalForm = () => {
 
   const extractLinks = (text) => {
     const links = [];
-    const regex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+    const regex = /\[([^\]]+)]\((https?:\/\/[^)]+)\)/g;
     let match;
     while ((match = regex.exec(text))) {
       links.push({ label: match[1], url: match[2] });
