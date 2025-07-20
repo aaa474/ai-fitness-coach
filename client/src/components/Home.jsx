@@ -5,7 +5,7 @@ const Home = () => {
         AI Fitness & Diet Coach
       </h1>
       <p className="text-lg text-gray-600 max-w-2xl mb-8">
-        Get personalized fitness and nutrition plans powered by AI. Track your progress and receive intelligent insights — all in one place.
+        Get personalized fitness and nutrition plans powered by AI. Track your progress and receive intelligent insights, all in one place.
       </p>
       <a
         href="/auth"
