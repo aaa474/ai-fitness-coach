@@ -21,7 +21,7 @@ const ProgressChart = () => {
       if (!user) return;
 
       try {
-        const res = await fetch("http://localhost:5000/api/get-progress", {
+        const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/get-progress`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userEmail: user.email }),
@@ -67,7 +67,7 @@ const ProgressChart = () => {
       .join("\n")}\n\nPlease summarize my trend and progress.`;
 
     try {
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),

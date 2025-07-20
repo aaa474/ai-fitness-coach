@@ -9,7 +9,7 @@ const ProgressTimeline = () => {
       const user = auth.currentUser;
       if (!user) return;
 
-      const res = await fetch("http://localhost:5000/api/get-progress", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/get-progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail: user.email }),

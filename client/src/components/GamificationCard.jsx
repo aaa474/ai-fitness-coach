@@ -10,7 +10,7 @@ const GamificationCard = () => {
       const user = auth.currentUser;
       if (!user) return;
 
-      const res = await fetch("http://localhost:5000/api/get-xp", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/get-xp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail: user.email }),

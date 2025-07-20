@@ -51,7 +51,7 @@ const GoalForm = () => {
 
     const user = auth.currentUser;
     try {
-      const res = await fetch("http://localhost:5000/api/generate-plan", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/generate-plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

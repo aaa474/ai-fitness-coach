@@ -14,7 +14,7 @@ const DailyPlan = () => {
 
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:5000/api/get-daily-plan", {
+        const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/get-daily-plan`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userEmail: user.email }),
@@ -22,7 +22,7 @@ const DailyPlan = () => {
         const data = await res.json();
         setTodayPlan(data.plan || data.error || "No plan generated.");
 
-        const historyRes = await fetch("http://localhost:5000/api/get-daily-history", {
+        const historyRes = await fetch(`${process.env.REACT_APP_API_BASE}/api/get-daily-history`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userEmail: user.email }),
