@@ -58,6 +58,13 @@ xp_collection = db.xp
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def root():
+    return jsonify({
+        "status": "online",
+        "message": "AI Fitness Coach API is running. Please use the appropriate API endpoints."
+    })
+
 @app.route("/api/generate-plan", methods=["POST"])
 def generate_plan():
     try:
@@ -390,24 +397,37 @@ def test_bedrock():
         print("Testing AWS credentials and Bedrock connectivity...")
         region = os.getenv("AWS_REGION")
         model_id = os.getenv("BEDROCK_MODEL_ID")
+        access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         
-        if not region or not model_id:
+        if not all([region, model_id, access_key, secret_key]):
+            missing = []
+            if not region: missing.append("AWS_REGION")
+            if not model_id: missing.append("BEDROCK_MODEL_ID")
+            if not access_key: missing.append("AWS_ACCESS_KEY_ID")
+            if not secret_key: missing.append("AWS_SECRET_ACCESS_KEY")
+            
             return jsonify({
                 "status": "error",
                 "message": "Missing AWS configuration",
-                "details": {
-                    "region": "not set" if not region else "set",
-                    "model_id": "not set" if not model_id else "set"
-                }
+                "missing_vars": missing
             }), 400
 
-        # Test Bedrock connectivity
-        response = bedrock.list_foundation_models()
+        # Test simple Bedrock prompt
+        test_prompt = "Say 'Hello' in a friendly way."
+        print("Testing Bedrock with a simple prompt...")
+        response = generate_with_bedrock(test_prompt)
+        
         return jsonify({
             "status": "success",
             "message": "AWS Bedrock connection successful",
-            "region": region,
-            "model_id": model_id
+            "test_response": response,
+            "config": {
+                "region": region,
+                "model_id": model_id,
+                "access_key_present": bool(access_key),
+                "secret_key_present": bool(secret_key)
+            }
         })
     except Exception as e:
         print(f"Bedrock test error: {str(e)}")
