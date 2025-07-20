@@ -40,7 +40,18 @@ daily_plans_collection = db.daily_plans
 xp_collection = db.xp
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",
+            "https://ai-fitness-coach-tr2s.onrender.com",
+            "https://friendly-baklava-b86794.netlify.app",
+            "https://*.netlify.app"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 @app.route("/api/generate-plan", methods=["POST"])
 def generate_plan():
