@@ -85,7 +85,7 @@ const DailyPlan = () => {
 
       {history.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">📚 Past Daily Plans</h3>
+          <h3 className="text-lg font-semibold mb-4">Past Daily Plans</h3>
           <div className="space-y-4 max-h-64 overflow-y-auto">
             {history.map((entry, i) => (
               <div key={i} className="border border-gray-300 dark:border-gray-600 rounded p-3 bg-gray-50 dark:bg-gray-700">
