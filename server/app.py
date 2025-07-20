@@ -9,7 +9,23 @@ import boto3
 import json
 
 load_dotenv()
-bedrock = boto3.client("bedrock-runtime", region_name=os.getenv("AWS_REGION"))
+
+try:
+    aws_region = os.getenv("AWS_REGION")
+    if not aws_region:
+        raise ValueError("AWS_REGION environment variable is not set")
+    
+    print(f"Initializing Bedrock client in region: {aws_region}")
+    bedrock = boto3.client(
+        "bedrock-runtime",
+        region_name=aws_region,
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+    )
+    print("Bedrock client initialized successfully")
+except Exception as e:
+    print(f"Error initializing Bedrock client: {str(e)}")
+    raise e
 
 def generate_with_bedrock(prompt):
     model_id = os.getenv("BEDROCK_MODEL_ID")
@@ -40,18 +56,7 @@ daily_plans_collection = db.daily_plans
 xp_collection = db.xp
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "http://localhost:3000",
-            "https://ai-fitness-coach-tr2s.onrender.com",
-            "https://friendly-baklava-b86794.netlify.app",
-            "https://*.netlify.app"
-        ],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app)
 
 @app.route("/api/generate-plan", methods=["POST"])
 def generate_plan():
@@ -378,6 +383,40 @@ def get_daily_plan():
         print("Daily plan error:", e)
         return jsonify({"error": "Failed to generate daily plan"}), 500
     
+@app.route("/api/test-bedrock", methods=["GET"])
+def test_bedrock():
+    try:
+        # Test AWS credentials
+        print("Testing AWS credentials and Bedrock connectivity...")
+        region = os.getenv("AWS_REGION")
+        model_id = os.getenv("BEDROCK_MODEL_ID")
+        
+        if not region or not model_id:
+            return jsonify({
+                "status": "error",
+                "message": "Missing AWS configuration",
+                "details": {
+                    "region": "not set" if not region else "set",
+                    "model_id": "not set" if not model_id else "set"
+                }
+            }), 400
+
+        # Test Bedrock connectivity
+        response = bedrock.list_foundation_models()
+        return jsonify({
+            "status": "success",
+            "message": "AWS Bedrock connection successful",
+            "region": region,
+            "model_id": model_id
+        })
+    except Exception as e:
+        print(f"Bedrock test error: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+            "type": type(e).__name__
+        }), 500
+
 @app.route("/api/get-daily-history", methods=["POST"])
 def get_daily_history():
     try:
@@ -396,27 +435,44 @@ def get_daily_history():
         return jsonify({"error": "Failed to retrieve daily plan history"}), 500
     
 def generate_with_bedrock(prompt):
-    model_id = os.getenv("BEDROCK_MODEL_ID")
-    body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 1024,
-        "temperature": 0.7,
-        "messages": [{"role": "user", "content": prompt}]
-    }
-
     try:
-        response = bedrock.invoke_model(
-            modelId=model_id,
-            contentType="application/json",
-            accept="application/json",
-            body=json.dumps(body)
-        )
+        model_id = os.getenv("BEDROCK_MODEL_ID")
+        if not model_id:
+            raise ValueError("BEDROCK_MODEL_ID environment variable is not set")
+        print(f"Using Bedrock model: {model_id}")
+        
+        body = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1024,
+            "temperature": 0.7,
+            "messages": [{"role": "user", "content": prompt}]
+        }
 
-        result = json.loads(response['body'].read())
-        return result["content"][0]["text"]
-    
+        print("Attempting to invoke Bedrock model...")
+        try:
+            response = bedrock.invoke_model(
+                modelId=model_id,
+                contentType="application/json",
+                accept="application/json",
+                body=json.dumps(body)
+            )
+            print("Successfully received response from Bedrock")
+            
+            result = json.loads(response['body'].read())
+            return result["content"][0]["text"]
+            
+        except boto3.exceptions.ClientError as e:
+            error_code = e.response['Error']['Code']
+            error_message = e.response['Error']['Message']
+            print(f"AWS Bedrock Error - Code: {error_code}, Message: {error_message}")
+            if 'AccessDeniedException' in str(e):
+                print("Access denied - check IAM permissions and credentials")
+            raise
+            
     except Exception as e:
-        print("Bedrock Error:", str(e))
+        print(f"Unexpected error in generate_with_bedrock: {str(e)}")
+        print(f"AWS Region: {os.getenv('AWS_REGION')}")
+        print(f"Model ID: {os.getenv('BEDROCK_MODEL_ID')}")
         raise e
 
 if __name__ == "__main__":
